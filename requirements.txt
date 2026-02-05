@@ -1,0 +1,10 @@
+streamlit
+openai
+opencv-python-headless
+moviepy<2.0.0
+scenedetect
+pandas
+numpy
+tabulate
+gspread
+google-auth
