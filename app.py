@@ -12,6 +12,7 @@ from openai import OpenAI
 import numpy as np
 import gspread
 from google.oauth2.service_account import Credentials
+import time  # 遷移演出用に追加
 
 # --- ページ設定 ---
 st.set_page_config(
@@ -100,20 +101,36 @@ def update_usage(row_index, current_usage):
 def login_screen():
     st.title("🎬 ショート動画アナライザー")
     
-    with st.form("login_form"):
-        st.subheader("会員ログイン")
-        username = st.text_input("ユーザーID")
-        password = st.text_input("パスワード", type="password")
-        submit = st.form_submit_button("ログイン")
-        
-        if submit:
-            user_info = check_login(username, password)
-            if user_info:
-                st.session_state["user"] = user_info
-                st.success("ログインしました！")
-                st.rerun()
-            else:
-                st.error("IDまたはパスワードが間違っています。")
+    # デザイン調整：カラムを使って中央寄せ風に見せる
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        with st.form("login_form"):
+            st.subheader("会員ログイン")
+            st.caption("スクールから発行されたIDとパスワードを入力してください")
+            
+            username = st.text_input("ユーザーID", placeholder="例: user01")
+            password = st.text_input("パスワード", type="password")
+            
+            # 少しスペースを空ける
+            st.write("") 
+            submit = st.form_submit_button("ログイン", use_container_width=True)
+            
+            if submit:
+                if not username or not password:
+                    st.warning("⚠️ ユーザーIDとパスワードを入力してください。")
+                else:
+                    with st.spinner("確認中..."):
+                        user_info = check_login(username, password)
+                    
+                    if user_info:
+                        st.session_state["user"] = user_info
+                        st.success("認証成功！アプリを起動します...")
+                        time.sleep(1) # メッセージを読ませるための短いウェイト
+                        st.rerun()
+                    else:
+                        # ここで赤字(error)ではなく黄色(warning)を使用
+                        st.warning("⚠️ ログインできませんでした。\n\nIDまたはパスワードが一致しません。入力ミスがないか（大文字・小文字など）をご確認ください。")
 
 if "user" in st.session_state and st.sidebar.button("ログアウト"):
     del st.session_state["user"]
